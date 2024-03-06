@@ -44,27 +44,27 @@ async function initialLoad() {
 initialLoad();
 
 
-async function breedSelectEvent(e) {
-    try{
-        const selectedBreed = e.target.value;
-        const res = await axios.post('https://api.thecatapi.com/v1/breeds/search?q=${selectedBreed}')
-        const data = await res.json();
+// async function breedSelectEvent(e) {
+//     try{
+//         const selectedBreed = e.target.value;
+//         const res = await axios.post('https://api.thecatapi.com/v1/breeds/search?q=${selectedBreed}')
+//         const data = await res.json();
         
-        clearCarousel();
+//         clearCarousel();
         
-        clearInfoDump();
-        populateInfoDump(data);
+//         clearInfoDump();
+//         populateInfoDump(data);
         
-        //loop through to create carousel elements for each object in the response array
-        data.forEach(breed => {
-            const carouselItem = createCarouselItem(breed);
-            appendToCarousel(carouselItem);
-        })
-    }
-    catch (error) {
-        console.error('Could not fetch breed information:', error);
-    };
-}
+//         //loop through to create carousel elements for each object in the response array
+//         data.forEach(breed => {
+//             const carouselItem = createCarouselItem(breed);
+//             appendToCarousel(carouselItem);
+//         })
+//     }
+//     catch (error) {
+//         console.error('Could not fetch breed information:', error);
+//     };
+// }
 
 //clearCarousel() function to clear the carousel
 async function clearCarousel() {
@@ -267,8 +267,32 @@ async function breedSelectEvent(e) {
 * - You can call this function by clicking on the heart at the top right of any image.
 */
 async function favourite(imgId) {
- // your code here
+    try {
+        // Check if the image is already favorited
+        const isFavoritedResponse = await axiosInstance.get(`https://api.thecatapi.com/v1/favourites?image_id=${imageId}`);
+        const isFavorited = isFavoritedResponse.data.length > 0;
+
+        if (isFavorited) {
+            // If already favorited, delete the favorite
+            await axiosInstance.delete(`https://api.thecatapi.com/v1/favourites/${isFavoritedResponse.data[0].id}`);
+            console.log(`Removed from favorites: ${imageId}`);
+        } else {
+            // If not favorited, add to favorites
+            await axiosInstance.post('https://api.thecatapi.com/v1/favourites', { image_id: imageId });
+            console.log(`Added to favorites: ${imageId}`);
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+    }
 }
+
+// Example usage: Call toggleFavorite function when clicking on the heart icon
+const heartIcon = document.getElementById('heartIcon');
+const imageId = 'YOUR_IMAGE_ID_HERE'; // Replace with the actual image ID
+
+heartIcon.addEventListener('click', () => {
+    toggleFavorite(imageId);
+});
 
 /**
 * 9. Test your favourite() function by creating a getFavourites() function.
@@ -288,3 +312,83 @@ async function favourite(imgId) {
 * - Test other breeds as well. Not every breed has the same data available, so
 *   your code should account for this.
 */
+
+
+// ================= Carousel.js ================//
+// import * as bootstrap from "bootstrap";
+// import { favourite } from "./index.js";
+
+function createCarouselItem(imgSrc, imgAlt, imgId) {
+    const template = document.querySelector("#carouselItemTemplate");
+    const clone = template.content.firstElementChild.cloneNode(true);
+  
+    const img = clone.querySelector("img");
+    img.src = imgSrc;
+    img.alt = imgAlt;
+  
+    const favBtn = clone.querySelector(".favourite-button");
+    favBtn.addEventListener("click", () => {
+      favourite(imgId);
+    });
+  
+    return clone;
+  }
+  
+  function clear() {
+    const carousel = document.querySelector("#carouselInner");
+    while (carousel.firstChild) {
+      carousel.removeChild(carousel.firstChild);
+    }
+  }
+  
+  function appendCarousel(element) {
+    const carousel = document.querySelector("#carouselInner");
+  
+    const activeItem = document.querySelector(".carousel-item.active");
+    if (!activeItem) element.classList.add("active");
+  
+    carousel.appendChild(element);
+  }
+  
+  function start() {
+    const multipleCardCarousel = document.querySelector(
+      "#carouselExampleControls"
+    );
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      const carousel = new bootstrap.Carousel(multipleCardCarousel, {
+        interval: false
+      });
+      const carouselWidth = $(".carousel-inner")[0].scrollWidth;
+      const cardWidth = $(".carousel-item").width();
+      let scrollPosition = 0;
+      $("#carouselExampleControls .carousel-control-next").unbind();
+      $("#carouselExampleControls .carousel-control-next").on(
+        "click",
+        function () {
+          if (scrollPosition < carouselWidth - cardWidth * 4) {
+            scrollPosition += cardWidth;
+            $("#carouselExampleControls .carousel-inner").animate(
+              { scrollLeft: scrollPosition },
+              600
+            );
+          }
+        }
+      );
+      $("#carouselExampleControls .carousel-control-prev").unbind();
+      $("#carouselExampleControls .carousel-control-prev").on(
+        "click",
+        function () {
+          if (scrollPosition > 0) {
+            scrollPosition -= cardWidth;
+            $("#carouselExampleControls .carousel-inner").animate(
+              { scrollLeft: scrollPosition },
+              600
+            );
+          }
+        }
+      );
+    } else {
+      $(multipleCardCarousel).addClass("slide");
+    }
+  }
+  
