@@ -25,7 +25,7 @@ const API_KEY = "live_mxidstpgh4wAgHK82BSlA42W0RgfYPzLXWTyxAhjDtEtK3D88bQHyDuVbJ
  *  - Each option should display text equal to the name of the breed.
  * This function should execute immediately.
  */
-const apiUrl = 'https://api.thecatapi.com/v1/breeds'
+const apiUrl = 'https://api.thecatapi.com/v1/breeds';
 
 async function initialLoad() {
     try {
@@ -37,7 +37,7 @@ async function initialLoad() {
         
         breeds.forEach(breed => {
             const option = document.createElement('option');
-            option.value = breed.id;
+            option.value = breed.name;
             option.textContent = breed.name;
             breedSelect.appendChild(option);
         })
@@ -80,12 +80,12 @@ async function breedSelectEvent(e) {
     }
     catch (error) {
         console.error('Could not fetch breed information:', error);
-        };
+    };
 }
 
 //clearCarousel() function to clear the carousel
 async function clearCarousel() {
-    const carousel = document.getElementsByClassName('carousel');
+    const carousel = document.querySelector('.carousel');
     carousel.innerHTML = '';
 }
 
@@ -98,11 +98,49 @@ async function clearInfoDump() {
 //populateInfoDump(data) 
 async function populateInfoDump(data) {
     const infoDump = document.getElementById('infoDump');
-    
+    infoDump.innerHTML = '';
+
+    const heading = document.createElement('h1');
+    heading.textContent = data[0].name; // Assuming data is an array with at least one element
+    infoDump.appendChild(heading);
 }
 
 //createCarouselItem(breed)
+async function createCarouselItem(breed) {
+    const carouselItem = document.createElement('div');
+    carouselItem.classList.add('carousel-item');
 
+    //image
+    const image = document.querySelector('card img');
+    image.src = breed.image.url;
+    image.alt = breed.name;
+    carouselItem.appendChild(image);
+
+    //name
+    const heading = document.createElement('h2');
+    heading.textContent = breed.name;
+    carouselItem.appendChild(heading);
+
+    //origin
+    const origin = document.createElement('p');
+    origin.textContent = 'Origin: ${breed.origin}';
+    carouselItem.appendChild('p');
+
+    //weight
+    const weight = document.createElement('p');
+    weight.textContent = 'Weight: ${breed.weight.imperial} lbs';
+
+    //temperament
+    const tude = document.createElement('p');
+    tude.textContent = 'Temperment: ${breed.temperment}';
+
+
+    //description
+    const des = document.createElement('p');
+    des.textContent ='Description: ${breed.description}'
+
+    return carouselItem;
+}
 
 //appendToCarousel(carouselItem)
 async function appendToCarousel(carouselItem) {
